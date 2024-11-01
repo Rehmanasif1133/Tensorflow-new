@@ -14,6 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 source "${BASH_SOURCE%/*}/utilities/setup.sh"
+MAX_RETRIES=2
 
 if [[ `uname -s | grep -P '^MSYS_NT'` ]]; then
   PROFILE_JSON_PATH=$(replace_drive_letter_with_c "$TFCI_OUTPUT_DIR")
@@ -27,6 +28,10 @@ fi
 if [[ "$TFCI_WHL_NUMPY_VERSION" == 1 ]]; then
   cp ./ci/official/requirements_updater/numpy1_requirements/*.txt .
 fi
+
+for ((i=1; i <= $MAX_RETRIES; i++)); do
+  tfrun bazel --version
+done
 
 if [[ $TFCI_PYCPP_SWAP_TO_BUILD_ENABLE == 1 ]]; then
   tfrun bazel build $TFCI_BAZEL_COMMON_ARGS --profile "$PROFILE_JSON_PATH" --@local_config_cuda//cuda:override_include_cuda_libs=true --config="${TFCI_BAZEL_TARGET_SELECTING_CONFIG_PREFIX}_pycpp_test"
