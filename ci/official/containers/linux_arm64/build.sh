@@ -65,8 +65,12 @@ for target in jax tf; do
   fi
   set -e
 
+  infra_public_tag=infrastructure-public-image-$(docker images "$AR_IMAGE" --quiet)
+  AR_IMAGE_INFRA_PUBLIC="$AR_IMAGE_PATH:$infra_public_tag"
+  docker image tag "$AR_IMAGE" "$AR_IMAGE_INFRA_PUBLIC"
+
   if [[ -n "$KOKORO_BUILD_ID" ]]; then
     gcloud auth configure-docker us-central1-docker.pkg.dev
-    docker push "$AR_IMAGE"
+    docker push "$AR_IMAGE_PATH" --all-tags
   fi
 done
