@@ -1020,6 +1020,7 @@ cc_library(
         ":cuda_collectives",
         ":cuda_command_buffer",
         ":cuda_context",
+        ":cuda_driver",  # buildcleaner: keep
         ":cuda_event",  # buildcleaner: keep
         ":cuda_kernel",  # buildcleaner: keep
         ":cuda_platform_id",
