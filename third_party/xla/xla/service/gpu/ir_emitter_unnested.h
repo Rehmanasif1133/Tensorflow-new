@@ -43,6 +43,7 @@ limitations under the License.
 #include "xla/service/gpu/ir_emitter_context.h"
 #include "xla/service/gpu/launch_dimensions.h"
 #include "xla/service/gpu/runtime/copy_thunk.h"
+#include "xla/service/gpu/runtime/nccl_group_thunk.h"
 #include "xla/service/gpu/runtime/send_recv_thunk.h"
 #include "xla/service/gpu/runtime/sequential_thunk.h"
 #include "xla/service/gpu/runtime/thunk.h"
@@ -158,11 +159,15 @@ class IrEmitterUnnested : public IrEmitter {
   absl::Status EmitTopKCustomCall(const HloCustomCallInstruction* instr);
   absl::Status EmitTritonCustomCall(const HloCustomCallInstruction* instr);
 
-  absl::Status EmitSendThunk(const HloSendInstruction* instr);
-  absl::Status EmitSendDoneThunk(const HloSendDoneInstruction* instr);
+  absl::Status EmitSendThunk(const HloSendInstruction* instr,
+                             NcclGroupThunk* group_thunk = nullptr);
+  absl::Status EmitSendDoneThunk(const HloSendDoneInstruction* instr,
+                                 NcclGroupThunk* group_thunk = nullptr);
 
-  absl::Status EmitRecvThunk(const HloRecvInstruction* instr);
-  absl::Status EmitRecvDoneThunk(const HloRecvDoneInstruction* instr);
+  absl::Status EmitRecvThunk(const HloRecvInstruction* instr,
+                             NcclGroupThunk* group_thunk = nullptr);
+  absl::Status EmitRecvDoneThunk(const HloRecvDoneInstruction* instr,
+                                 NcclGroupThunk* group_thunk = nullptr);
 
   template <typename NcclThunkType, typename HloInstType>
   absl::Status EmitNcclThunk(Thunk::Kind kind,
@@ -170,7 +175,8 @@ class IrEmitterUnnested : public IrEmitter {
                              const HloInstType* inst,
                              std::optional<bool> use_global_device_ids);
 
-  absl::Status EmitNcclAsyncDone(Thunk::Kind kind, const HloInstruction* instr);
+  absl::Status EmitNcclAsyncDone(Thunk::Kind kind, const HloInstruction* instr,
+                                 NcclGroupThunk* group_thunk = nullptr);
 
   template <typename ThunkType>
   absl::Status EmitReplicaOrPartitionId(const HloInstruction* instr);
@@ -182,11 +188,11 @@ class IrEmitterUnnested : public IrEmitter {
 
   absl::Status EmitCopyDoneThunk(const HloInstruction* instr);
 
-  absl::Status EmitHloInstruction(const HloInstruction* instr);
+  absl::Status EmitHloInstruction(const HloInstruction* instr,
+                                  NcclGroupThunk* group_thunk = nullptr);
 
-  absl::Status EmitNcclGroupStartThunk(const HloInstruction* instr);
-
-  absl::Status EmitNcclGroupDoneThunk(const HloInstruction* instr);
+  absl::Status EmitNcclGroupThunk(const HloInstruction* instr,
+                                  Thunk::Kind kind);
 
   absl::Status EmitTargetElementLoop(
       const HloInstruction& hlo,
